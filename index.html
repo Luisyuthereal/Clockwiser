@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ClockWise — Grade 12 Attendance</title>
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    --ink: #1B2431;
+    --ink-soft: #6B7280;
+    --paper: #FAF6EC;
+    --panel: #FFFFFF;
+    --panel-alt: #F3EDDF;
+    --rule: #E4DDC9;
+    --gold: #A9782E;
+    --gold-soft: #EFE0BE;
+    --present: #1E7A34;
+    --present-bg: #E0F3E3;
+    --late: #7A5E00;
+    --late-bg: #FFE066;
+    --absent: #B3261E;
+    --absent-bg: #FBDAD7;
+    --focus: #2F5F9E;
+    --shadow-color: rgba(27, 36, 49, 0.08);
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #EFE9DA;
+    --ink-soft: #A2A9B4;
+    --paper: #14181F;
+    --panel: #1C222C;
+    --panel-alt: #232A35;
+    --rule: #323A47;
+    --gold: #D2A44E;
+    --gold-soft: #3A3323;
+    --present: #6FCB85;
+    --present-bg: #163320;
+    --late: #FFE066;
+    --late-bg: #4A3C00;
+    --absent: #F28B82;
+    --absent-bg: #3D1613;
+    --focus: #6FA3E0;
+    --shadow-color: rgba(0, 0, 0, 0.35);
+  }
+
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    height: 100%;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  h1, h2, h3, .brand {
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  button { font-family: inherit; cursor: pointer; }
+  input, select { font-family: inherit; }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Login view ---------- */
+  #login-view {
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 40px 36px;
+    box-shadow: 0 1px 3px var(--shadow-color);
+  }
+
+  .login-card .kicker {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .login-card h1 {
+    font-size: 30px;
+    margin-bottom: 4px;
+  }
+
+  .login-card .sub {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .field { margin-bottom: 18px; }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .field select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
+    background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 3px;
+    font-size: 15px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  .btn-primary:hover { opacity: 0.92; }
+
+  .login-foot {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  /* ---------- Dashboard ---------- */
+  #dashboard-view {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--rule);
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .topbar-left { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .topbar .brand { font-size: 20px; }
+  .topbar .room-tag {
+    font-size: 13px;
+    color: var(--gold);
+    font-weight: 600;
+    padding: 3px 9px;
+    background: var(--gold-soft);
+    border-radius: 3px;
+  }
+  .topbar .strand-tag {
+    color: var(--ink-soft);
+    background: var(--panel-alt);
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .clock { font-size: 14px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+  .icon-btn {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--ink);
+    font-size: 17px;
+  }
+  .icon-btn:hover { background: var(--panel-alt); }
+
+  main.content {
+    flex: 1;
+    padding: 24px;
+    max-width: 980px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .section-head h2 { font-size: 18px; }
+  .section-head .meta { font-size: 13px; color: var(--ink-soft); }
+
+  .table-wrap {
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow-x: auto;
+    background: var(--panel);
+  }
+
+  table { width: 100%; border-collapse: collapse; min-width: 640px; }
+
+  thead th {
+    text-align: left;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 12px 16px;
+    font-size: 14.5px;
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr.me { background: var(--panel-alt); }
+
+  .stu-name { font-weight: 600; }
+  .stu-id { color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  td.time { font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+  td.time.set { color: var(--ink); }
+
+  .status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .status-present { background: var(--present-bg); color: var(--present); }
+  .status-late { background: var(--late-bg); color: var(--late); }
+  .status-absent { background: var(--absent-bg); color: var(--absent); }
+
+  .action-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 10px 18px;
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid var(--rule);
+    background: var(--panel);
+    color: var(--ink);
+  }
+  .btn:hover { background: var(--panel-alt); }
+  .btn.dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn.dark:hover { opacity: 0.9; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* ---------- Settings panel ---------- */
+  #settings-panel {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(360px, 100%);
+    background: var(--panel);
+    border-left: 1px solid var(--rule);
+    padding: 24px;
+    padding-top: calc(24px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    z-index: 20;
+    transform: translateX(100%);
+    transition: transform 0.22s ease;
+  }
+  #settings-panel.open { transform: translateX(0); }
+
+  #settings-scrim {
+    position: fixed; inset: 0;
+    background: rgba(20, 24, 31, 0.35);
+    z-index: 19;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+  }
+  #settings-scrim.open { opacity: 1; pointer-events: auto; }
+
+  .settings-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+  }
+  .settings-head h2 { font-size: 19px; }
+
+  .settings-group {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .settings-group:last-child { border-bottom: none; }
+  .settings-group .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .settings-group .title { font-size: 14.5px; font-weight: 600; }
+  .settings-group .desc { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; margin-bottom: 10px; }
+
+  .switch {
+    position: relative;
+    width: 40px; height: 22px;
+    background: var(--rule);
+    border-radius: 20px;
+    border: none;
+    flex-shrink: 0;
+  }
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    background: var(--panel);
+    border-radius: 50%;
+    transition: transform 0.15s ease;
+  }
+  .switch.on { background: var(--gold); }
+  .switch.on::after { transform: translateX(18px); }
+
+  .btn-block {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .btn-block:hover { background: var(--panel-alt); }
+
+  .room-list { margin-top: 6px; }
+  .room-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 13.5px;
+  }
+  .room-row .soon { font-size: 11.5px; color: var(--ink-soft); }
+  .room-row.active .name { font-weight: 600; }
+  .room-row .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--present); display: inline-block; margin-right: 8px; }
+  .room-row.inactive .dot { background: var(--rule); }
+  .room-row.inactive .name { color: var(--ink-soft); }
+
+  /* ---------- Modal ---------- */
+  #modal-overlay, #confirm-overlay {
+    position: fixed; inset: 0;
+    background: rgba(20, 24, 31, 0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 30;
+    padding: 20px;
+  }
+  .modal-box {
+    background: var(--panel);
+    border-radius: 4px;
+    padding: 28px;
+    max-width: 340px;
+    width: 100%;
+    box-shadow: 0 8px 24px var(--shadow-color);
+  }
+  .modal-box h3 { font-size: 17px; margin-bottom: 10px; color: var(--ink); }
+  #modal-overlay h3 { color: var(--absent); }
+  .modal-box p { font-size: 14px; line-height: 1.5; color: var(--ink-soft); margin: 0 0 20px; }
+  .modal-box .btn-primary { margin-top: 0; }
+
+  [hidden] { display: none !important; }
+
+  @media (max-width: 560px) {
+    .login-card { padding: 30px 24px; }
+    main.content { padding: 16px; }
+    .topbar { padding: 14px 16px; }
+    .action-bar { flex-direction: column; }
+    .action-bar .btn { width: 100%; padding: 13px 18px; }
+
+    .table-wrap { overflow-x: hidden; }
+    table { min-width: 0; }
+    thead { display: none; }
+    table, tbody, tr, td { display: block; width: 100%; }
+    tbody tr { padding: 14px 16px; }
+    tbody td {
+      border-bottom: none;
+      padding: 3px 0;
+      white-space: normal;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    tbody td::before {
+      content: attr(data-label);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      flex-shrink: 0;
+    }
+    tbody td.stu-name {
+      display: block;
+      font-size: 15.5px;
+      padding: 0 0 8px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- LOGIN -->
+  <section id="login-view">
+    <div class="login-card">
+      <div class="kicker">Grade 12 · Perpetualites</div>
+      <h1 class="brand">ClockWise</h1>
+      <p class="sub">STEM section · sign in to record your time in for today.</p>
+
+      <form id="login-form">
+        <div class="field">
+          <label for="in-name">Full name</label>
+          <input id="in-name" type="text" placeholder="Dela Cruz, Juan" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label for="in-id">Student ID</label>
+          <input id="in-id" type="text" placeholder="15-0802-910" autocomplete="off" required>
+        </div>
+        <div class="field">
+          <label for="in-room">Section</label>
+          <select id="in-room" required>
+            <option value="" selected disabled>Select your section</option>
+            <option>House of Gold</option>
+            <option>Tower of Ivory</option>
+            <option>Help of Christians</option>
+            <option>Tower of David</option>
+            <option>Ark of Covenant</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary">Sign in</button>
+      </form>
+
+      <div class="login-foot">This device is shared by the section. After signing in, use "Switch student" to hand it to the next student.</div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard-view" hidden>
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="brand">ClockWise</span>
+        <span class="room-tag" id="room-tag">House of Gold</span>
+        <span class="room-tag strand-tag">STEM</span>
+      </div>
+      <div class="topbar-right">
+        <span class="clock" id="clock">—</span>
+        <button class="icon-btn" id="settings-btn" aria-label="Settings" title="Settings">⚙</button>
+      </div>
+    </div>
+
+    <main class="content">
+      <div class="section-head">
+        <h2>Today's attendance</h2>
+        <span class="meta" id="today-label">—</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>ID</th>
+              <th>Time in</th>
+              <th>Time out</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="roster-body"></tbody>
+        </table>
+      </div>
+
+      <div class="action-bar">
+        <button class="btn dark" id="timeout-btn">Time out</button>
+        <button class="btn" id="switch-btn">Switch student</button>
+      </div>
+    </main>
+  </section>
+
+  <!-- SETTINGS -->
+  <div id="settings-scrim"></div>
+  <aside id="settings-panel" aria-label="Settings">
+    <div class="settings-head">
+      <h2>Settings</h2>
+      <button class="icon-btn" id="settings-close" aria-label="Close">✕</button>
+    </div>
+
+    <div class="settings-group">
+      <div class="label-row">
+        <span class="title">Dark mode</span>
+        <button class="switch" id="dark-toggle" aria-label="Toggle dark mode"></button>
+      </div>
+      <div class="desc">Switch the display for low-light classrooms.</div>
+    </div>
+
+    <div class="settings-group">
+      <div class="title">Reports</div>
+      <div class="desc">Export today's board as a spreadsheet-ready file.</div>
+      <button class="btn-block" id="export-btn">Download today's report (.csv)</button>
+    </div>
+
+    <div class="settings-group">
+      <div class="title">Sections</div>
+      <div class="desc">All sections are live. Each only accepts its own pre-listed students.</div>
+      <div class="room-list">
+        <div class="room-row active"><span class="name"><span class="dot"></span>House of Gold</span><span class="soon">Active</span></div>
+        <div class="room-row active"><span class="name"><span class="dot"></span>Tower of Ivory</span><span class="soon">Active</span></div>
+        <div class="room-row active"><span class="name"><span class="dot"></span>Help of Christians</span><span class="soon">Active</span></div>
+        <div class="room-row active"><span class="name"><span class="dot"></span>Tower of David</span><span class="soon">Active</span></div>
+        <div class="room-row active"><span class="name"><span class="dot"></span>Ark of Covenant</span><span class="soon">Active</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ERROR MODAL -->
+  <div id="modal-overlay" hidden>
+    <div class="modal-box">
+      <h3>Wrong classroom</h3>
+      <p id="modal-message">You are not from this classroom.</p>
+      <button class="btn-primary" id="modal-close">Try again</button>
+    </div>
+  </div>
+
+  <!-- CONFIRM MODAL -->
+  <div id="confirm-overlay" hidden>
+    <div class="modal-box">
+      <h3 id="confirm-title">Are you sure?</h3>
+      <p id="confirm-message"></p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn" id="confirm-cancel" style="flex:1;">Cancel</button>
+        <button class="btn-primary" id="confirm-ok" style="flex:1; margin-top:0;">Yes</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* SEED_STATE_START */
+var __SEED_STATE__ = null;
+/* SEED_STATE_END */
+(function () {
+  "use strict";
+
+  var PAGE_TEMPLATE = document.documentElement.outerHTML;
+  var STORAGE_KEY = "clockwise-state-v1";
+  var TZ = "Asia/Manila";
+
+  var VALID_ROOMS = ["House of Gold", "Tower of Ivory", "Help of Christians", "Tower of David", "Ark of Covenant"];
+
+  function freshSeedData() {
+    return {
+      "House of Gold": [
+        { id: "15-0802-910", name: "Aquino, Sherry Anne M.", timeIn: null, timeOut: null },
+        { id: "15-0451-221", name: "Bautista, Agnes Marie D.", timeIn: null, timeOut: null },
+        { id: "15-0452-332", name: "Cruz, Rafael Ignacio S.", timeIn: null, timeOut: null },
+        { id: "15-0453-443", name: "Dizon, Bianca Faith T.", timeIn: null, timeOut: null },
+        { id: "15-0454-554", name: "Estrada, Miguel Andres L.", timeIn: null, timeOut: null },
+        { id: "15-0455-665", name: "Flores, Cassandra Joy R.", timeIn: null, timeOut: null },
+        { id: "15-0456-776", name: "Garcia, Diego Emmanuel P.", timeIn: null, timeOut: null },
+        { id: "15-0457-887", name: "Hizon, Patricia Anne V.", timeIn: null, timeOut: null },
+        { id: "15-0458-998", name: "Ilagan, Joshua Gabriel N.", timeIn: null, timeOut: null },
+        { id: "21-0551-359", name: "Porciuncula, Sophia Alexandria P.", timeIn: null, timeOut: null },
+        { id: "21-0512-360", name: "Brecio, Dwayne Christoffer Francis C.", timeIn: null, timeOut: null },
+        { id: "25-0323-146", name: "Felipe, Jarred Rassual P.", timeIn: null, timeOut: null },
+        { id: "25-0174-770", name: "Sena, Alexis Olalia", timeIn: null, timeOut: null },
+        { id: "20-0044-968", name: "Quilang, Skye Jiane Castillo", timeIn: null, timeOut: null },
+        { id: "21-0035-315", name: "Mañago, Shaira Fae S.", timeIn: null, timeOut: null }
+      ],
+      "Tower of Ivory": [
+        { id: "25-0087-108", name: "Juico, Zenia Xyra M.", timeIn: null, timeOut: null }
+      ],
+      "Help of Christians": [
+        { id: "23-0102-136", name: "Nero, Zyra Anika C.", timeIn: null, timeOut: null },
+        { id: "25-0400-703", name: "Martirez, Anne M.", timeIn: null, timeOut: null },
+        { id: "25-0829-337", name: "Libre, Lexie Jos", timeIn: null, timeOut: null }
+      ],
+      "Tower of David": [
+        { id: "21-0299-187", name: "De Jesus, Dana Jaren H.", timeIn: null, timeOut: null },
+        { id: "25-0022-536", name: "Chavez, Nhazier Keith Airol T.", timeIn: null, timeOut: null }
+      ],
+      "Ark of Covenant": [
+        { id: "25-0656-959", name: "Fule, Marc Nathaniel A.", timeIn: null, timeOut: null },
+        { id: "25-0230-663", name: "Villanueva, Kyle Nathan L.", timeIn: null, timeOut: null },
+        { id: "25-0177-526", name: "Agtarap, Raymar Espinosa", timeIn: null, timeOut: null }
+      ]
+    };
+  }
+
+  var PRESENT_CUTOFF = "08:00"; // time in at/before this = Present (window opens 7:30 AM)
+  var DAY_END_CUTOFF = "15:30"; // time in after this = Absent
+
+  function manilaDateParts(d) {
+    var fmt = new Intl.DateTimeFormat("en-CA", {
+      timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+    });
+    var parts = {};
+    fmt.formatToParts(d).forEach(function (p) { parts[p.type] = p.value; });
+    return parts;
+  }
+
+  function todayKey() {
+    var p = manilaDateParts(new Date());
+    return p.year + "-" + p.month + "-" + p.day;
+  }
+
+  function nowTimeString() {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: TZ, hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true
+    }).format(new Date());
+  }
+
+  function timeStringToMinutes(hhmm) {
+    var pieces = hhmm.split(":");
+    return parseInt(pieces[0], 10) * 60 + parseInt(pieces[1], 10);
+  }
+
+  function loadState() {
+    var raw = null;
+    try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { raw = null; }
+    var local = null;
+    if (raw) {
+      try { local = JSON.parse(raw); } catch (e) { local = null; }
+    }
+
+    var state = {
+      date: todayKey(),
+      classroomsData: freshSeedData(),
+      currentUserId: null,
+      currentClassroom: null,
+      settings: { darkMode: false }
+    };
+
+    // Shared attendance data: the broadcast copy (if this page load carries one)
+    // is the source of truth, since it reflects the kiosk device's latest publish.
+    // Otherwise fall back to whatever this device last saw locally.
+    if (__SEED_STATE__ && __SEED_STATE__.classroomsData) {
+      state.date = __SEED_STATE__.date || state.date;
+      state.classroomsData = __SEED_STATE__.classroomsData;
+    } else if (local && local.classroomsData) {
+      state.date = local.date || state.date;
+      state.classroomsData = local.classroomsData;
+    }
+
+    // Login session, theme: always local to this device, never taken from the
+    // broadcast — otherwise a stranger opening the link would land already
+    // "signed in" as whoever last used the kiosk.
+    if (local) {
+      state.currentUserId = local.currentUserId || null;
+      state.currentClassroom = local.currentClassroom || null;
+      if (local.settings) state.settings = local.settings;
+    }
+    var seedData = freshSeedData();
+    VALID_ROOMS.forEach(function (room) {
+      if (!Array.isArray(state.classroomsData[room])) {
+        state.classroomsData[room] = seedData[room];
+        return;
+      }
+      // add any newly-introduced roster entries without touching existing records
+      seedData[room].forEach(function (seedStudent) {
+        var already = state.classroomsData[room].some(function (s) {
+          return s.id.toLowerCase() === seedStudent.id.toLowerCase();
+        });
+        if (!already) state.classroomsData[room].push(JSON.parse(JSON.stringify(seedStudent)));
+      });
+    });
+    if (state.date !== todayKey()) {
+      state.date = todayKey();
+      VALID_ROOMS.forEach(function (room) {
+        state.classroomsData[room].forEach(function (s) { s.timeIn = null; s.timeOut = null; });
+      });
+      state.currentUserId = null;
+      state.currentClassroom = null;
+    }
+    if (!state.settings) state.settings = { darkMode: false };
+    if (state.currentClassroom === undefined) state.currentClassroom = null;
+    return state;
+  }
+
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  var state = loadState();
+
+  var loginView = document.getElementById("login-view");
+  var dashView = document.getElementById("dashboard-view");
+  var loginForm = document.getElementById("login-form");
+  var rosterBody = document.getElementById("roster-body");
+  var clockEl = document.getElementById("clock");
+  var todayLabel = document.getElementById("today-label");
+  var timeoutBtn = document.getElementById("timeout-btn");
+  var switchBtn = document.getElementById("switch-btn");
+
+  var settingsPanel = document.getElementById("settings-panel");
+  var settingsScrim = document.getElementById("settings-scrim");
+  var settingsBtn = document.getElementById("settings-btn");
+  var settingsClose = document.getElementById("settings-close");
+  var darkToggle = document.getElementById("dark-toggle");
+  var exportBtn = document.getElementById("export-btn");
+
+  var modalOverlay = document.getElementById("modal-overlay");
+  var modalMessage = document.getElementById("modal-message");
+  var modalClose = document.getElementById("modal-close");
+
+  var confirmOverlay = document.getElementById("confirm-overlay");
+  var confirmTitle = document.getElementById("confirm-title");
+  var confirmMessage = document.getElementById("confirm-message");
+  var confirmOkBtn = document.getElementById("confirm-ok");
+  var confirmCancelBtn = document.getElementById("confirm-cancel");
+  var pendingConfirmAction = null;
+
+  function askConfirm(title, message, onConfirm) {
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    pendingConfirmAction = onConfirm;
+    confirmOverlay.hidden = false;
+  }
+  confirmCancelBtn.addEventListener("click", function () {
+    confirmOverlay.hidden = true;
+    pendingConfirmAction = null;
+  });
+  confirmOkBtn.addEventListener("click", function () {
+    var action = pendingConfirmAction;
+    confirmOverlay.hidden = true;
+    pendingConfirmAction = null;
+    if (action) action();
+  });
+
+  function applyTheme() {
+    if (state.settings.darkMode) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+    darkToggle.classList.toggle("on", !!state.settings.darkMode);
+  }
+
+  function activeRoster() {
+    return state.classroomsData[state.currentClassroom] || [];
+  }
+
+  function statusFor(student) {
+    if (!student.timeIn) return { label: "Absent", cls: "status-absent" };
+    var inMin = timeStringToMinutes(student.timeIn.minutesRef);
+    var dayEndMin = timeStringToMinutes(DAY_END_CUTOFF);
+    if (inMin > dayEndMin) return { label: "Absent", cls: "status-absent" };
+    var presentMin = timeStringToMinutes(PRESENT_CUTOFF);
+    if (inMin > presentMin) return { label: "Late", cls: "status-late" };
+    return { label: "Present", cls: "status-present" };
+  }
+
+  function renderRoster() {
+    rosterBody.innerHTML = "";
+    activeRoster().forEach(function (s) {
+      var st = statusFor(s);
+      var tr = document.createElement("tr");
+      if (s.id === state.currentUserId) tr.className = "me";
+
+      var tdName = document.createElement("td");
+      tdName.className = "stu-name";
+      tdName.textContent = s.name;
+
+      var tdId = document.createElement("td");
+      tdId.className = "stu-id";
+      tdId.setAttribute("data-label", "ID");
+      tdId.textContent = s.id;
+
+      var tdIn = document.createElement("td");
+      tdIn.className = "time" + (s.timeIn ? " set" : "");
+      tdIn.setAttribute("data-label", "Time in");
+      tdIn.textContent = s.timeIn ? s.timeIn.display : "—";
+
+      var tdOut = document.createElement("td");
+      tdOut.className = "time" + (s.timeOut ? " set" : "");
+      tdOut.setAttribute("data-label", "Time out");
+      tdOut.textContent = s.timeOut ? s.timeOut.display : "—";
+
+      var tdStatus = document.createElement("td");
+      tdStatus.setAttribute("data-label", "Status");
+      var pill = document.createElement("span");
+      pill.className = "status-pill " + st.cls;
+      pill.textContent = st.label;
+      tdStatus.appendChild(pill);
+
+      tr.appendChild(tdName);
+      tr.appendChild(tdId);
+      tr.appendChild(tdIn);
+      tr.appendChild(tdOut);
+      tr.appendChild(tdStatus);
+      rosterBody.appendChild(tr);
+    });
+
+    var me = activeRoster().find(function (s) { return s.id === state.currentUserId; });
+    timeoutBtn.disabled = !me || !me.timeIn || !!me.timeOut;
+  }
+
+  function updateTodayLabel() {
+    var fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: TZ, weekday: "long", month: "long", day: "numeric"
+    });
+    todayLabel.textContent = fmt.format(new Date()) + " · Manila time";
+  }
+
+  function tickClock() {
+    clockEl.textContent = nowTimeString();
+  }
+
+  function showDashboard() {
+    loginView.hidden = true;
+    dashView.hidden = false;
+    document.getElementById("room-tag").textContent = state.currentClassroom || "";
+    updateTodayLabel();
+    renderRoster();
+  }
+
+  function showLogin() {
+    dashView.hidden = true;
+    loginView.hidden = false;
+    loginForm.reset();
+  }
+
+  function findStudent(roster, id) {
+    return roster.find(function (s) { return s.id.toLowerCase() === id.toLowerCase(); });
+  }
+
+  loginForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = document.getElementById("in-name").value.trim();
+    var id = document.getElementById("in-id").value.trim();
+    var room = document.getElementById("in-room").value;
+
+    if (VALID_ROOMS.indexOf(room) === -1) {
+      modalMessage.textContent = "You are not from this classroom.";
+      modalOverlay.hidden = false;
+      return;
+    }
+    if (!name || !id) return;
+
+    var roster = state.classroomsData[room];
+    var existing = findStudent(roster, id);
+    if (!existing) {
+      modalMessage.textContent = "You are not from this classroom.";
+      modalOverlay.hidden = false;
+      return;
+    }
+    if (!existing.timeIn) {
+      existing.timeIn = { display: nowTimeString(), minutesRef: (function () {
+        var p = manilaDateParts(new Date());
+        return p.hour + ":" + p.minute;
+      })() };
+    }
+    state.currentClassroom = room;
+    state.currentUserId = existing.id;
+    saveState();
+    showDashboard();
+  });
+
+  modalClose.addEventListener("click", function () { modalOverlay.hidden = true; });
+
+  timeoutBtn.addEventListener("click", function () {
+    var me = activeRoster().find(function (s) { return s.id === state.currentUserId; });
+    if (!me || !me.timeIn || me.timeOut) return;
+    me.timeOut = { display: nowTimeString() };
+    saveState();
+    renderRoster();
+  });
+
+  switchBtn.addEventListener("click", function () {
+    state.currentUserId = null;
+    state.currentClassroom = null;
+    saveState();
+    showLogin();
+  });
+
+  function openSettings() {
+    settingsPanel.classList.add("open");
+    settingsScrim.classList.add("open");
+  }
+  function closeSettings() {
+    settingsPanel.classList.remove("open");
+    settingsScrim.classList.remove("open");
+  }
+  settingsBtn.addEventListener("click", openSettings);
+  settingsClose.addEventListener("click", closeSettings);
+  settingsScrim.addEventListener("click", closeSettings);
+
+  darkToggle.addEventListener("click", function () {
+    state.settings.darkMode = !state.settings.darkMode;
+    applyTheme();
+    saveState();
+  });
+
+  exportBtn.addEventListener("click", function () {
+    var rows = [["Name", "Student ID", "Time In", "Time Out", "Status"]];
+    activeRoster().forEach(function (s) {
+      var st = statusFor(s);
+      rows.push([s.name, s.id, s.timeIn ? s.timeIn.display : "", s.timeOut ? s.timeOut.display : "", st.label]);
+    });
+    var csv = rows.map(function (r) {
+      return r.map(function (cell) {
+        var val = String(cell).replace(/"/g, '""');
+        return /[",\n]/.test(val) ? '"' + val + '"' : val;
+      }).join(",");
+    }).join("\n");
+    var roomSlug = (state.currentClassroom || "report").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+    async function trySave() {
+      try {
+        var downloads = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+        if (downloads) {
+          await downloads.save({ filename: "clockwise-" + roomSlug + "-" + state.date + ".csv", data: csv });
+          return;
+        }
+      } catch (e) { /* fall through */ }
+      try {
+        var blob = new Blob([csv], { type: "text/csv" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "clockwise-" + roomSlug + "-" + state.date + ".csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (e2) { /* ignore */ }
+    }
+    trySave();
+  });
+
+  applyTheme();
+
+  if (state.currentUserId && state.currentClassroom && findStudent(activeRoster(), state.currentUserId)) {
+    showDashboard();
+  } else {
+    showLogin();
+  }
+
+  tickClock();
+  setInterval(tickClock, 1000);
+  setInterval(function () {
+    var fresh = todayKey();
+    if (fresh !== state.date) {
+      state.date = fresh;
+      VALID_ROOMS.forEach(function (room) {
+        state.classroomsData[room].forEach(function (s) { s.timeIn = null; s.timeOut = null; });
+      });
+      state.currentUserId = null;
+      state.currentClassroom = null;
+      saveState();
+      updateTodayLabel();
+      showLogin();
+    }
+  }, 30000);
+})();
+</script>
+</body>
+</html>
